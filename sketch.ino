@@ -80,6 +80,7 @@ void loop() {
       lcd.print("A:Time B:SetTime");
       lcd.setCursor(0,1);
       lcd.print("C:SetFeed D:Exit");
+      lcd.setCursor(0,2);
       lcd.print("#:Manual Feed");
 
       if(key == 'A') { lcd.clear(); menuState = 1; }
