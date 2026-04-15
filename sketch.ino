@@ -63,6 +63,10 @@ void setup() {
   delay(2000);
   lcd.clear();
 }
+/*
+The void set up is where I initialize all the components, like the LCD screen, the servo motor, and the buzzer. 
+On startup, it also displays a message to set the clock.
+*/
 
 void loop() {
   digitalWrite(buzzer, LOW);
@@ -70,12 +74,12 @@ void loop() {
   updateClock();
   char key = keypad.getKey();
 
-    if(key =='#'){
+    if(key =='#'){  //manual feed
       dispenseFood();
     }
 
-  switch(menuState) {
-    case 0:
+  switch(menuState) {    //menu navigation
+    case 0:     //main menu
       lcd.setCursor(0,0);
       lcd.print("A:Time B:SetTime");
       lcd.setCursor(0,1);
@@ -88,15 +92,15 @@ void loop() {
       if(key == 'C') { lcd.clear(); menuState = 3; }
       break;
 
-    case 1:
+    case 1:  //vies time and timers
       showTime();
-      if(key == 'B') {
+      if(key == 'B') {  //scroll forward in the timers screen
         timerViewIndex += 2;
         if(timerViewIndex >=timerCount) timerViewIndex = 0;
         lcd.clear(); 
         }
         
-      if(key == 'C') {
+      if(key == 'C') {  //scroll backwards in the timers screen
         timerViewIndex -= 2;
         if(timerViewIndex < 0) timerViewIndex = max(0, timerCount - 2);
         lcd.clear();
@@ -104,27 +108,32 @@ void loop() {
       
       showTime();
 
-      if(key == 'D') {
+      if(key == 'D') {  //exit to main menu
         lcd.clear();
         menuState = 0;
       }
       break;
 
-    case 2:
+    case 2:  //set clock
       setClock();
       lcd.clear();
       menuState = 0;
       break;
 
-    case 3:
+    case 3:  //set timers
       setTimer();
       lcd.clear();
       menuState = 0;
       break;
   }
 
-  checkFeeding();
+  checkFeeding();  //check if its time to feed
 }
+/*
+The void loop is the main loop that runs continuously and controls the system. 
+It updates the clock, reads the keypad inputs, navigates the menu system, allows the manual feed with the # key,
+and calls the feeding check to trigger the automatic feeding.
+*/
 
 void updateClock() {
   unsigned long currentMillis = millis();
@@ -147,7 +156,12 @@ void updateClock() {
   }
 }
 /*
-void showTime() {
+This is how i keep track of time, using millis().
+ It increments minutes every 60,000ms, rolls over minutes to hours, and implements a 12-hour clock and AM/PM.
+*/
+
+/*
+void showTime() {  //1st attempt
   lcd.setCursor(0,0);
   lcd.print("Time: ");
 
@@ -161,7 +175,7 @@ void showTime() {
 }
 */
 /*
-void showTime() {
+void showTime() {  //2nd attempt
 
   // ===== Clear both rows manually (prevents ghost characters) =====
   lcd.setCursor(0,0);
@@ -213,14 +227,18 @@ void showTime() {
     if(i == 0) lcd.print(" ");
     
   }
+  These are my different attemps at my showTime() function. The first 1 was the first attempt that worked, but only showed the time 
+  it didnt show any timers. The second one was my first attempt to show the timers with the time, but when i set the clock, the time and 
+  the page number would glitch together, and it was made worse when i added the timers.
 */
-void showTime() {
+
+void showTime() { 
   static int lastHour = -1;
   static int lastMinute = -1;
   static bool lastPM = -1;
   static int lastViewIndex = -1;
 
-  // Only update screen if something changed
+  // Only update screen if something changed because of the issues i was having previously
   if(currentHour == lastHour &&
      currentMinute == lastMinute &&
      currentPM == lastPM &&
@@ -278,6 +296,9 @@ void showTime() {
     if(i == 0) lcd.print(" ");
   }
 }
+/*
+This was my succesfull showTime function, it displays the current time and page number in the top row, and up to 2 timers per page. 
+  */
 
 void setClock() {
   lcd.clear();
@@ -296,6 +317,9 @@ void setClock() {
 
   currentPM = (key == '2');
 }
+/*
+this function allows the user to input the time, by putting 2-digits for the hour and minutes, then choose AM or PM
+  */
 
 void setTimer() {
   if(timerCount >= 4) {
@@ -304,7 +328,10 @@ void setTimer() {
     delay(2000);
     return;
   }
-
+/*
+This function allows a max of 4 timers, a user input of AM/PM and stores the values in my timer array.
+    */
+  
   lcd.clear();
   lcd.print("Set HHMM:");
 
@@ -341,6 +368,10 @@ void checkFeeding() {
     }
   }
 }
+/*
+this function compares the current time with all the timers stored, and if a match is found it dispenses food
+and then waits 60 seconds to prevent the servo from re-triggering.
+  */
 
 void dispenseFood() {
   lcd.clear();
@@ -356,6 +387,10 @@ void dispenseFood() {
 
   lcd.clear();
 }
+/*
+This function controls the feeding process, to actuates the servo to release the food, activates the buzzer to alert you when the feeding is happening,
+and it displays the feeding message on the LCD screen
+  */
 
 int getNumber(int digits) {
   int value = 0;
@@ -371,6 +406,10 @@ int getNumber(int digits) {
     lcd.print(key);
     value = value * 10 + (key - '0');
   }
+  /*
+This functions reads the input from the keypad, only accepts the 0-9 when inputing the time or timers, displays the input on LCD and the 
+keys are used, and returns the final value.
+    */
 
   return value;
 }
